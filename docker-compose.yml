@@ -6,13 +6,14 @@ services:
       - '3000:3000'
     depends_on:
       - mysql
-      - prisma
     env_file:
       - .env.local
+    command: npx prisma generate
 
   mysql:
-    image: mysql
+    image: mysql:5.7
     container_name: mysql
+    command: mysqld --sql_mode=""
     restart: always
     ports:
       - '3307:3306'
@@ -20,14 +21,20 @@ services:
       - .env.local
     volumes:
       - mysql:/var/lib/mysql/data
+    environment:
+      - 'MYSQL_DATABASE=dash'
+      - 'MYSQL_USER=root'
+      - 'MYSQL_PASSWORD=pass'
+      - 'MYSQL_ALLOW_EMPTY_PASSWORD=true'
+      - 'MYSQL_ROOT_PASSWORD=secret'
 
-  prisma:
-    build: .
-    command: npx prisma generate
-    depends_on:
-      - mysql
-    env_file:
-      - .env.local
+  # prisma:
+  #   build: .
+  #   command: npx prisma generate
+  #   depends_on:
+  #     - mysql
+  #   env_file:
+  #     - .env.local
 
 volumes:
   mysql:
