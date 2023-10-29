@@ -1,34 +1,17 @@
 version: '3.8'
+
 services:
-  nest-api:
-    build: .
-    ports:
-      - '3000:3000'
-    depends_on:
-      - mysql
-      - prisma
-    env_file:
-      - .env.local
-
-  mysql:
-    image: mysql
+  database:
     container_name: mysql
+    image: mysql:5.7
     restart: always
+    environment:
+      MYSQL_DATABASE: 'dash'
+      MYSQL_USER: 'user'
+      MYSQL_ROOT_PASSWORD: 'qwe123'
     ports:
-      - '3307:3306'
-    env_file:
-      - .env.local
-    volumes:
-      - mysql:/var/lib/mysql/data
-
-  prisma:
-    build: .
-    command: npx prisma generate
-    depends_on:
-      - mysql
-    env_file:
-      - .env.local
-
+      - '3306:3306'
+    volumes: 
+      - prisma:/var/lib/mysql
 volumes:
-  mysql:
-    name: nest-db
+  prisma:
