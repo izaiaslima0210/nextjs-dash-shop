@@ -11,98 +11,104 @@ datasource db {
 }
 
 model Category {
-  id String @id @default(uuid())
-  name String
-  slug String
+  id       String    @id @default(uuid())
+  name     String
+  slug     String
   imageUrl String
   products Product[]
-  Course Course[]
-} 
+  Course   Course[]
+}
 
 model Course {
-  id       String      @id @default(uuid())
-  name     String
-  slug String
-  description String
-  price    Float
-  image String
+  id              String   @id @default(uuid())
+  name            String
+  slug            String
+  description     String
+  price           Float
+  image           String
   data_lancamento DateTime @default(now())
-  online        Boolean
-  video_url     String?
-  acesso_free   Boolean
-  status Boolean
-  categoryId String
-  category Category @relation(fields: [categoryId], references: [id])
+  online          Boolean
+  video_url       String?
+  acesso_free     Boolean
+  status          Boolean
+  categoryId      String
+  category        Category @relation(fields: [categoryId], references: [id])
+  module          Module[]
+  order           Order[]
+
   @@index([categoryId], name: "ct_")
-  module  Module[]
-  order Order[]
 }
 
 model Product {
-  id String @id @default(uuid()) 
-  name String
-  slug String
-  description String
-  basePrice Decimal @db.Decimal(10,2)
-  imageUrl String
-  categoryId String
-  category Category @relation(fields: [categoryId], references: [id])
+  id                 String   @id @default(uuid())
+  name               String
+  slug               String
+  description        String
+  basePrice          Decimal  @db.Decimal(10, 2)
+  imageUrl           String
+  categoryId         String
+  category           Category @relation(fields: [categoryId], references: [id])
+  status             Boolean
+  stockQuantity      Int      @default(0)
+  diccountPercentage Int      @default(0)
+  orders             Order[]
+
   @@index([categoryId], name: "ct_")
-  status Boolean
-  stockQuantity Int @default(0)
-  diccountPercentage Int @default(0)
-  orders Order[]
 }
 
 model Order {
-  id      String      @id @default(uuid())
-  date    DateTime @default(now())
-  status  String
-  products  Product[]
-  courses    Course[]
-  negociacoes  Negotiation[]
+  id          String        @id @default(uuid())
+  date        DateTime      @default(now())
+  status      String
+  products    Product[]
+  courses     Course[]
+  negociacoes Negotiation[]
 }
+
 model Negotiation {
-  id String @id @default(uuid())
-  amount Float
+  id          String   @id @default(uuid())
+  amount      Float
   dataPayment DateTime
-  order Order @relation(fields: [orderId], references: [id])
-  orderId String
+  order       Order    @relation(fields: [orderId], references: [id])
+  orderId     String
 }
+
 model Module {
-  id       String      @id @default(uuid())
+  id       String    @id @default(uuid())
   title    String
-  slug String
+  slug     String
   courseId String
-  course   Course @relation(fields: [courseId], references: [id])
-  @@index([courseId], name: "cs_")
+  course   Course    @relation(fields: [courseId], references: [id])
   contents Content[]
+
+  @@index([courseId], name: "cs_")
 }
 
 model Content {
-  id        String      @id @default(uuid())
-  title     String
-  slug      String
-  moduleId  String
-  module    Module   @relation(fields: [moduleId], references: [id])
-  @@index([moduleId], name: "md_")
+  id       String @id @default(uuid())
+  title    String
+  slug     String
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id])
   videoUrl String
   archived Json
+
+  @@index([moduleId], name: "md_")
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?  @db.Text
-  session_state      String?
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -110,7 +116,7 @@ model Account {
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
   sessionToken String   @unique
   userId       String
   expires      DateTime
@@ -118,13 +124,21 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id @default(uuid())
   name          String?
   email         String?   @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
+  Profile       Profile?  @relation(fields: [profileId], references: [id])
+  profileId     String?
+}
+
+model Profile {
+  id    String @id @default(uuid())
+  name  String
+  users User[]
 }
 
 model VerificationToken {
