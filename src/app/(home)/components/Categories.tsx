@@ -1,4 +1,4 @@
-import { prismaClient } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import CategoryItem from "./category-item";
 import { Category } from "@prisma/client";
 
@@ -8,7 +8,7 @@ interface CategoriesProps {
 
 const  Categories = async () =>{
   try {
-    const categories = await prismaClient.category.findMany();
+    const categories = await prisma.category.findMany();
     return (
       <div className="grid grid-cols-2 gap-x-4 gap-y-2 lg:grid-cols-6 items-center">
         {categories.map((category) => (
@@ -19,7 +19,7 @@ const  Categories = async () =>{
   } catch (error) {
     console.error('Erro ao buscar categorias:', error);
     return (
-      <div className="grid grid-cols-1 gap-x-4 gap-y-2 lg:grid-cols-1 items-center">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2 lg:grid-cols-2 items-center">
         Sem Categorias cadastradas
       </div>
     );
