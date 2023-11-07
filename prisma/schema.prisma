@@ -48,14 +48,25 @@ model Product {
   imageUrl           String
   categoryId         String
   category           Category @relation(fields: [categoryId], references: [id])
+  codeBar            String?  
   status             Boolean
   stockQuantity      Int      @default(0)
   diccountPercentage Int      @default(0)
   orders             Order[]
+  insertions         ProductStoke[]
 
   @@index([categoryId], name: "ct_")
 }
 
+model ProductStoke {
+  id            String   @id @default(uuid())
+  productId     String
+  action        Stoke
+  DateRegister  DateTime @default(now()) 
+  insertedBy    String   
+  description  String
+  product       Product  @relation(fields: [productId], references: [id])
+}
 model Order {
   id          String        @id @default(uuid())
   date        DateTime      @default(now())
@@ -147,4 +158,9 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+enum Stoke {
+  INCLUDE
+  EXCLUDE
 }
