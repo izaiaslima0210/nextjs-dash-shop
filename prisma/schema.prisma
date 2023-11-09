@@ -82,6 +82,7 @@ model Negotiation {
   dataPayment DateTime
   order       Order    @relation(fields: [orderId], references: [id])
   orderId     String
+  numberOrder Int
 }
 
 model Module {
