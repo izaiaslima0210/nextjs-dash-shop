@@ -1,4 +1,4 @@
-name: Merge branches on tag
+name: Merge Branch on Tag
 
 on:
   push:
@@ -11,27 +11,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Merge branch
-        run: |
-          if [[ ${{ github.ref }} =~ ^refs/tags/QA-.* ]]; then
-            git checkout develop
-            git merge --no-ff ${{ github.ref }}
-          elif [[ ${{ github.ref }} =~ ^refs/tags/PROD-.* ]]; then
-            git checkout main
-            git merge --no-ff ${{ github.ref }}
-            git branch -d $(echo ${{ github.ref }} | sed 's/refs\/tags\///')
-          fi
+    - name: Create Pull Request
+      run: |
+        # Extrair o nome da branch do tag
+        branch=$(echo "${GITHUB_REF#refs/tags/}" | cut -d'-' -f2-)
+        
+        # Verificar se é QA ou PROD
+        if [[ $branch == "QA"* ]]; then
+          base_branch="develop"
+        elif [[ $branch == "PROD"* ]]; then
+          base_branch="main"
+        fi
+        
+        # Criar o pull request
+        gh pr create --base $base_branch --head $branch --title "Merge $branch into $base_branch" --body "Automatically created pull request to merge $branch into $base_branch"
+        
+    - name: Merge Pull Request
+      run: |
+        # Extrair o nome da branch do tag
+        branch=$(echo "${GITHUB_REF#refs/tags/}" | cut -d'-' -f2-)
+        
+        # Verificar se é QA ou PROD
+        if [[ $branch == "QA"* ]]; then
+          base_branch="develop"
+        elif [[ $branch == "PROD"* ]]; then
+          base_branch="main"
+        fi
+        
+        # Fundir o pull request
+        gh pr merge --auto --merge --squash --delete-branch
+        
+    - name: Restore Develop Branch on Merge Failure
+      if: failure()
+      run: |
+        # Restaurar a branch develop sem as alterações da branch atual
+        git checkout develop
+        git reset --hard HEAD^
 
-      - name: Push changes
-        run: git push origin HEAD
-
-  restore_branch:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Restore develop branch on merge request rejection
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == false
-        run: git fetch origin develop && git reset --hard origin/develop
+    - name: Resolve Conflicts
+      if: failure()
+      run: |
+        # Solicitar ao desenvolvedor para resolver conflitos
+        echo "Houve conflitos ao realizar o merge. Por favor, resolva os conflitos e tente novamente."
